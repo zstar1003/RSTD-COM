@@ -11,14 +11,19 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 parser = argparse.ArgumentParser(description="PyTorch BasicIRSTD train")
-parser.add_argument("--model_names", default=['ACM'], nargs='+',
+parser.add_argument("--model_names", default=['ACM', 'ALCNet'], nargs='+', 
                     help="model_name: 'ACM', 'ALCNet', 'DNANet', 'ISNet', 'UIUNet', 'RDIAN', 'ISTDU-Net', 'U-Net', 'RISTDnet'")              
-parser.add_argument("--dataset_names", default=['MASK-data'], nargs='+',
-                    help="dataset_name: 'NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K', 'SIRST3', 'NUDT-SIRST-Sea', 'IRDST-real','MASK-data'")
+parser.add_argument("--dataset_names", default=['NUAA-SIRST'], nargs='+', 
+                    help="dataset_name: 'NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K', 'SIRST3', 'NUDT-SIRST-Sea', 'IRDST-real'")
 parser.add_argument("--img_norm_cfg", default=None, type=dict,
                     help="specific a img_norm_cfg, default=None (using img_norm_cfg values of each dataset)")
+parser.add_argument("--img_norm_cfg_mean", default=None, type=float,
+                    help="specific a mean value img_norm_cfg, default=None (using img_norm_cfg values of each dataset)")
+parser.add_argument("--img_norm_cfg_std", default=None, type=float,
+                    help="specific a std value img_norm_cfg, default=None (using img_norm_cfg values of each dataset)")
+
 parser.add_argument("--dataset_dir", default='./datasets', type=str, help="train_dataset_dir")
-parser.add_argument("--batchSize", type=int, default=2, help="Training batch sizse")
+parser.add_argument("--batchSize", type=int, default=16, help="Training batch sizse")
 parser.add_argument("--patchSize", type=int, default=256, help="Training patch size")
 parser.add_argument("--save", default='./log', type=str, help="Save path of checkpoints")
 parser.add_argument("--resume", default=None, nargs='+', help="Resume from exisiting checkpoints (default: None)")
@@ -34,6 +39,11 @@ parser.add_argument("--seed", type=int, default=42, help="Threshold for test")
 
 global opt
 opt = parser.parse_args()
+## Set img_norm_cfg
+if opt.img_norm_cfg_mean != None and opt.img_norm_cfg_std != None:
+  opt.img_norm_cfg = dict()
+  opt.img_norm_cfg['mean'] = opt.img_norm_cfg_mean
+  opt.img_norm_cfg['std'] = opt.img_norm_cfg_std
 
 seed_pytorch(opt.seed)
 
@@ -68,12 +78,14 @@ def train():
         opt.optimizer_settings = {'lr': 5e-4}
         opt.scheduler_name = 'MultiStepLR'
         opt.scheduler_settings = {'epochs':400, 'step': [200, 300], 'gamma': 0.1}
+        opt.scheduler_settings['epochs'] = opt.nEpochs
     
     ### Default settings of DNANet                
     if opt.optimizer_name == 'Adagrad':
         opt.optimizer_settings = {'lr': 0.05}
         opt.scheduler_name = 'CosineAnnealingLR'
         opt.scheduler_settings = {'epochs':1500, 'min_lr':1e-5}
+        opt.scheduler_settings['epochs'] = opt.nEpochs
         
     opt.nEpochs = opt.scheduler_settings['epochs']
         
@@ -93,7 +105,7 @@ def train():
             optimizer.step()
 
         scheduler.step()
-        if (idx_epoch + 1) % 1 == 0:
+        if (idx_epoch + 1) % 10 == 0:
             total_loss_list.append(float(np.array(total_loss_epoch).mean()))
             print(time.ctime()[4:-5] + ' Epoch---%d, total_loss---%f,' 
                   % (idx_epoch + 1, total_loss_list[-1]))

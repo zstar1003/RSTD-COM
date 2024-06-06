@@ -40,7 +40,7 @@ class PD_FA():
         self.PD = 0
         self.target= 0
     def update(self, preds, labels, size):
-        predits = np.array((preds).cpu()).astype('int64')
+        predits  = np.array((preds).cpu()).astype('int64')
         labelss = np.array((labels).cpu()).astype('int64') 
 
         image = measure.label(predits, connectivity=2)
