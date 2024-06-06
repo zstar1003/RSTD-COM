@@ -1,0 +1,2 @@
+python inference.py --model_names ACM --dataset_names WideIRSTD --pth_dirs WideIRSTD/ACM_400.pth.tar
+python inference.py --model_names UIUNet --dataset_names WideIRSTD --pth_dirs WideIRSTD/UIUNet_400.pth.tar

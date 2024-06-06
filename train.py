@@ -11,9 +11,9 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 parser = argparse.ArgumentParser(description="PyTorch BasicIRSTD train")
-parser.add_argument("--model_names", default=['ACM', 'ALCNet'], nargs='+', 
-                    help="model_name: 'ACM', 'ALCNet', 'DNANet', 'ISNet', 'UIUNet', 'RDIAN', 'ISTDU-Net', 'U-Net', 'RISTDnet'")              
-parser.add_argument("--dataset_names", default=['NUAA-SIRST'], nargs='+', 
+parser.add_argument("--model_names", default=['SCTransNets'], nargs='+',
+                    help="model_name: 'ACM', 'ALCNet', 'DNANet', 'ISNet', 'UIUNet', 'RDIAN', 'ISTDU-Net', 'U-Net', 'RISTDnet', 'SCTransNets'")
+parser.add_argument("--dataset_names", default=['MASK-data'], nargs='+',
                     help="dataset_name: 'NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K', 'SIRST3', 'NUDT-SIRST-Sea', 'IRDST-real'")
 parser.add_argument("--img_norm_cfg", default=None, type=dict,
                     help="specific a img_norm_cfg, default=None (using img_norm_cfg values of each dataset)")

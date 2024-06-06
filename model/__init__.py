@@ -7,3 +7,4 @@ from model.DNANet.model_DNANet import DNANet as DNANet
 from model.UIUNet.model_UIUNet import UIUNET as UIUNet
 from model.ISTDUNet.model_ISTDUNet import ISTDU_Net as ISTDU_Net
 from model.RDIAN.model_RDIAN import RDIAN as RDIAN
+from model.SCTransNet.SCTransNet import SCTransNet as SCTransNet
