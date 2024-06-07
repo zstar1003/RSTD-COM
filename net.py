@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 import torch.nn.functional as F
+
+from model.SCTransNet.SCTransNet import get_CTranS_config
 from utils import *
 import os
 from loss import *
@@ -11,22 +13,23 @@ from skimage.feature.tests.test_orb import img
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
+
 class Net(nn.Module):
     def __init__(self, model_name, mode):
         super(Net, self).__init__()
         self.model_name = model_name
-        
+
         self.cal_loss = SoftIoULoss()
         if model_name == 'DNANet':
             if mode == 'train':
                 self.model = DNANet(mode='train')
             else:
-                self.model = DNANet(mode='test')  
+                self.model = DNANet(mode='test')
         elif model_name == 'DNANet_BY':
             if mode == 'train':
                 self.model = DNAnet_BY(mode='train')
             else:
-                self.model = DNAnet_BY(mode='test')  
+                self.model = DNAnet_BY(mode='test')
         elif model_name == 'ACM':
             self.model = ACM()
         elif model_name == 'ALCNet':
@@ -51,8 +54,13 @@ class Net(nn.Module):
         elif model_name == 'RDIAN':
             self.model = RDIAN()
         elif model_name == 'SCTransNet':
-            self.model = SCTransNet()
-        
+            if mode == 'train':
+                config_vit = get_CTranS_config()
+                self.model = SCTransNet(config_vit, mode='train', deepsuper=True)
+            else:
+                config_vit = get_CTranS_config()
+                self.model = SCTransNet(config_vit, mode='test', deepsuper=True)
+
     def forward(self, img):
         return self.model(img)
 
