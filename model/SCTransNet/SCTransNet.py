@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
-# @Author  : Shuai Yuan
-# @File    : SCTransNet.py
-# @Software: PyCharm
-# coding=utf-8
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -17,7 +11,7 @@ import torch.nn.functional as F
 import ml_collections
 from einops import rearrange
 import numbers
-from thop import profile
+# from thop import profile
 
 def get_CTranS_config():
     config = ml_collections.ConfigDict()
@@ -641,14 +635,14 @@ class SCTransNet(nn.Module):
             return torch.sigmoid(out)
 
 
-if __name__ == '__main__':
-    config_vit = get_CTranS_config()
-    model = SCTransNet(config_vit, mode='train', deepsuper=True)
-    model = model
-    inputs = torch.rand(2, 1, 256, 256)
-    output = model(inputs)
-    flops, params = profile(model, (inputs,))
-
-    print("-" * 50)
-    print('FLOPs = ' + str(flops / 1000 ** 3) + ' G')
-    print('Params = ' + str(params / 1000 ** 2) + ' M')
+# if __name__ == '__main__':
+#     config_vit = get_CTranS_config()
+#     model = SCTransNet(config_vit, mode='train', deepsuper=True)
+#     model = model
+#     inputs = torch.rand(2, 1, 256, 256)
+#     output = model(inputs)
+#     flops, params = profile(model, (inputs,))
+#
+#     print("-" * 50)
+#     print('FLOPs = ' + str(flops / 1000 ** 3) + ' G')
+#     print('Params = ' + str(params / 1000 ** 2) + ' M')
