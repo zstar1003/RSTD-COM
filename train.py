@@ -121,6 +121,7 @@ def train():
                 'total_loss': total_loss_list,
                 }, save_pth)
             test(save_pth)
+
             
         if (idx_epoch + 1) == opt.nEpochs and (idx_epoch + 1) % 50 != 0:
             save_pth = opt.save + '/' + opt.dataset_name + '/' + opt.model_name + '_' + str(idx_epoch + 1) + '.pth.tar'
@@ -152,10 +153,14 @@ def test(save_pth):
     
     results1 = eval_mIoU.get()
     results2 = eval_PD_FA.get()
+    score = 0.5 * results1 + 0.5 * results2
     print("pixAcc, mIoU:\t" + str(results1))
     print("PD, FA:\t" + str(results2))
+    print("score:\t" + str(score))
     opt.f.write("pixAcc, mIoU:\t" + str(results1) + '\n')
     opt.f.write("PD, FA:\t" + str(results2) + '\n')
+    opt.f.write("score:\t" + str(score) + '\n')
+
     
 def save_checkpoint(state, save_path):
     if not os.path.exists(os.path.dirname(save_path)):
