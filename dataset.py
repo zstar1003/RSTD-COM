@@ -1,5 +1,4 @@
 from utils import *
-import matplotlib.pyplot as plt
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
@@ -134,15 +133,34 @@ class EvalSetLoader(Dataset):
         return len(self.test_list) 
 
 
+
 class augumentation(object):
     def __call__(self, input, target):
-        if random.random()<0.5:
+        # 水平翻转
+        if random.random() < 0.5:
             input = input[::-1, :]
             target = target[::-1, :]
-        if random.random()<0.5:
+        # 垂直翻转
+        if random.random() < 0.5:
             input = input[:, ::-1]
             target = target[:, ::-1]
-        if random.random()<0.5:
+        # 转置
+        if random.random() < 0.5:
             input = input.transpose(1, 0)
             target = target.transpose(1, 0)
+        # 随机旋转
+        if random.random() < 0.5:
+            angle = random.choice([0, 90, 180, 270])
+            input = np.rot90(input, angle // 90)
+            target = np.rot90(target, angle // 90)
+        # 随机亮度调整
+        if random.random() < 0.5:
+            factor = 1.0 + (0.2 * (random.random() - 0.5))  # 随机在0.9到1.1之间
+            input = np.clip(input * factor, 0, 255).astype(np.float32)
+        # 随机对比度调整
+        if random.random() < 0.5:
+            factor = 1.0 + (0.2 * (random.random() - 0.5))  # 随机在0.9到1.1之间
+            mean = input.mean()
+            input = np.clip((input - mean) * factor + mean, 0, 255).astype(np.float32)
+
         return input, target
