@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from net import Net
 from dataset import *
 import matplotlib.pyplot as plt
+from torch.cuda.amp import autocast, GradScaler
 from metrics import *
 import os
 import time
@@ -11,11 +12,12 @@ from tqdm import tqdm
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 parser = argparse.ArgumentParser(description="PyTorch BasicIRSTD Inference without mask")
-parser.add_argument("--model_names", default=['ACM', 'ALCNet','DNANet', 'ISNet', 'RDIAN', 'ISTDU-Net'], nargs='+',  
+parser.add_argument("--model_names", default=['ACM', 'ALCNet', 'DNANet', 'ISNet', 'RDIAN', 'ISTDU-Net'], nargs='+',
                     help="model_name: 'ACM', 'ALCNet', 'DNANet', 'ISNet', 'UIUNet', 'RDIAN', 'ISTDU-Net', 'U-Net', 'RISTDnet'")
-parser.add_argument("--pth_dirs", default=None, nargs='+',  help="checkpoint dir, default=None or ['NUDT-SIRST/ACM_400.pth.tar','NUAA-SIRST/ACM_400.pth.tar']")
+parser.add_argument("--pth_dirs", default=None, nargs='+',
+                    help="checkpoint dir, default=None or ['NUDT-SIRST/ACM_400.pth.tar','NUAA-SIRST/ACM_400.pth.tar']")
 parser.add_argument("--dataset_dir", default='./datasets', type=str, help="train_dataset_dir")
-parser.add_argument("--dataset_names", default=['NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K'], nargs='+', 
+parser.add_argument("--dataset_names", default=['NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K'], nargs='+',
                     help="dataset_name: 'NUAA-SIRST', 'NUDT-SIRST', 'IRSTD-1K', 'SIRST3', 'NUDT-SIRST-Sea'")
 parser.add_argument("--img_norm_cfg", default=None, type=dict,
                     help="specific a img_norm_cfg, default=None (using img_norm_cfg values of each dataset)")
@@ -33,14 +35,15 @@ global opt
 opt = parser.parse_args()
 ## Set img_norm_cfg
 if opt.img_norm_cfg_mean != None and opt.img_norm_cfg_std != None:
-  opt.img_norm_cfg = dict()
-  opt.img_norm_cfg['mean'] = opt.img_norm_cfg_mean
-  opt.img_norm_cfg['std'] = opt.img_norm_cfg_std
-  
-def test(): 
+    opt.img_norm_cfg = dict()
+    opt.img_norm_cfg['mean'] = opt.img_norm_cfg_mean
+    opt.img_norm_cfg['std'] = opt.img_norm_cfg_std
+
+
+def test():
     test_set = InferenceSetLoader(opt.dataset_dir, opt.train_dataset_name, opt.test_dataset_name, opt.img_norm_cfg)
-    test_loader = DataLoader(dataset=test_set, num_workers=8, batch_size=8, shuffle=False)
-    
+    test_loader = DataLoader(dataset=test_set, num_workers=1, batch_size=1, shuffle=False)
+
     net = Net(model_name=opt.model_name, mode='test').cuda()
     try:
         net.load_state_dict(torch.load(opt.pth_dir)['state_dict'])
@@ -52,15 +55,17 @@ def test():
     with torch.no_grad():
         for idx_iter, (img, size, img_dir) in tqdm(enumerate(test_loader)):
             img = Variable(img).cuda()
-            pred = net.forward(img)
-            pred = pred[:,:,:size[0],:size[1]]        
+            with autocast():
+                pred = net.forward(img)
+            pred = pred[:, :, :size[0], :size[1]]
             # save img
             if opt.save_img == True:
-                img_save = transforms.ToPILImage()(((pred[0,0,:,:]>opt.threshold).float()).cpu())
+                img_save = transforms.ToPILImage()(((pred[0, 0, :, :] > opt.threshold).float()).cpu())
                 if not os.path.exists(opt.save_img_dir + opt.test_dataset_name + '/' + opt.model_name):
                     os.makedirs(opt.save_img_dir + opt.test_dataset_name + '/' + opt.model_name)
-                img_save.save(opt.save_img_dir + opt.test_dataset_name + '/' + opt.model_name + '/' + img_dir[0] + '.png')  
-    
+                img_save.save(
+                    opt.save_img_dir + opt.test_dataset_name + '/' + opt.model_name + '/' + img_dir[0] + '.png')
+
     print('Inference Done!')
 
 
